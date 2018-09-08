@@ -15,6 +15,7 @@ class TodoListViewController : SwipeTableViewController {
     var todoItems: Results<Item>?
     let realm = try! Realm()
     
+
     @IBOutlet var searchBar: UISearchBar!
     
     var selectedCategory : Category? {
@@ -22,7 +23,8 @@ class TodoListViewController : SwipeTableViewController {
             loadItems()
         }
     }
-    
+
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -32,6 +34,7 @@ class TodoListViewController : SwipeTableViewController {
         
    }
 
+
     override func viewWillAppear(_ animated: Bool) {
         title = selectedCategory?.name
 
@@ -39,9 +42,10 @@ class TodoListViewController : SwipeTableViewController {
 
         updateNavBar(withHexCode: colorHex)
     }
-    
+
+
     override func viewWillDisappear(_ animated: Bool) {
-        updateNavBar(withHexCode: "#008F00")
+//        updateNavBar(withHexCode: "#1D4711")
     }
     
     //MARK: NavBar setup methods
@@ -78,9 +82,9 @@ class TodoListViewController : SwipeTableViewController {
         }
         return cell
     }
-    
+
+
     //MARK: - TableView Delegate Methods
-    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         if let item = todoItems?[indexPath.row] {
@@ -96,7 +100,8 @@ class TodoListViewController : SwipeTableViewController {
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
     }
-    
+
+
     //MARK: - Ad New Items
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -107,16 +112,18 @@ class TodoListViewController : SwipeTableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             // what will happen once the user clicks the "Add Item" button on the UIAlert
             
-            if let currentCategory = self.selectedCategory {
-                do {
-                    try self.realm.write {
-                        let newItem = Item()
-                        newItem.title = textField.text!
-                        newItem.dateCreated = Date()
-                        currentCategory.items.append(newItem)
+            if textField.text != "" {
+                if let currentCategory = self.selectedCategory {
+                    do {
+                        try self.realm.write {
+                            let newItem = Item()
+                            newItem.title = textField.text!
+                            newItem.dateCreated = Date()
+                            currentCategory.items.append(newItem)
+                        }
+                    } catch {
+                        print("Error saving new items: \(error)")
                     }
-                } catch {
-                    print("Error saving new items: \(error)")
                 }
             }
             self.tableView.reloadData()
@@ -132,14 +139,15 @@ class TodoListViewController : SwipeTableViewController {
         
         present(alert, animated: true, completion: nil)
     }
-    
+
+
     //MARK: - Model Manipulation Methods
-    
     func loadItems() {
         todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         self.tableView.reloadData()
     }
-    
+
+
     override func updateModel(at indexPath:IndexPath) {
         if let item = todoItems?[indexPath.row] {
             do {
@@ -154,8 +162,8 @@ class TodoListViewController : SwipeTableViewController {
     
 }
 
-//MARK: - Search bar methods
 
+//MARK: - Search bar methods
 extension TodoListViewController: UISearchBarDelegate {
 
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -165,6 +173,7 @@ extension TodoListViewController: UISearchBarDelegate {
         tableView.reloadData()
         
     }
+
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {

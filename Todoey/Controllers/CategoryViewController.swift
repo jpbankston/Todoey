@@ -14,20 +14,32 @@ class CategoryViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     
+    var defaultNavBarColor: UIColor?
+    
     var categories: Results<Category>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
+        defaultNavBarColor = navigationController?.navigationBar.barTintColor
+
         loadCategories()
         
         tableView.separatorStyle = .none
     }
-    
+
+
+    //MARK: NavBar setup methods
     override func viewWillAppear(_ animated: Bool) {
         //MARK: - Add code to count items in Category and place number in label itemCount
-    }
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exists")}
+        navBar.barTintColor = defaultNavBarColor
+        navBar.tintColor = ContrastColorOf(defaultNavBarColor!, returnFlat: true)
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(defaultNavBarColor!, returnFlat: true)]
+        loadCategories()
+  }
+
 
     //MARK: - TableView Datasource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -40,8 +52,10 @@ class CategoryViewController: SwipeTableViewController {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let category = categories?[indexPath.row] {
-            cell.textLabel?.text = category.name
-            guard let categoryColor = UIColor(hexString: category.hexColor ?? "#50A3F7" ) else {fatalError()}
+            
+            cell.textLabel?.text = String(category.name + " (\(category.items.count) Items)")
+
+            guard let categoryColor = UIColor(hexString: category.hexColor ?? "#1D4711" ) else {fatalError()}
             
             cell.backgroundColor = categoryColor
             cell.textLabel?.textColor = ContrastColorOf(categoryColor, returnFlat: true)
@@ -52,13 +66,13 @@ class CategoryViewController: SwipeTableViewController {
     
     
     //MARK: - TableView Delegate Methods
-    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         performSegue(withIdentifier: "goToItems", sender: self)
         
     }
-    
+
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destinationVC = segue.destination as! TodoListViewController
         
@@ -67,7 +81,8 @@ class CategoryViewController: SwipeTableViewController {
             tableView.deselectRow(at: indexPath, animated: true)
         }
     }
-    
+
+
     //MARK: - Ad New Category
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -78,11 +93,13 @@ class CategoryViewController: SwipeTableViewController {
         let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
             // what will happen once the user clicks the "Add Category" button on the UIAlert
 
-            let newCategory = Category()
-            newCategory.hexColor = UIColor.randomFlat.hexValue()
-            newCategory.name = textField.text!
-            
-            self.save(category: newCategory)
+            if textField.text != "" {
+                let newCategory = Category()
+                newCategory.hexColor = UIColor.randomFlat.hexValue()
+                newCategory.name = textField.text!
+                
+                self.save(category: newCategory)
+            }
         }
         
         alert.addAction(action)
@@ -94,7 +111,8 @@ class CategoryViewController: SwipeTableViewController {
         
         present(alert, animated: true, completion: nil)
     }
-    
+
+
     //MARK: - Data Manipulation Methods
     func save(category: Category) {
         
@@ -107,6 +125,7 @@ class CategoryViewController: SwipeTableViewController {
         }
         tableView.reloadData()
     }
+
     
     //MARK: - Delete data from Swipe
     override func updateModel(at indexPath: IndexPath) {
@@ -127,6 +146,7 @@ class CategoryViewController: SwipeTableViewController {
             }
         }
     }
+
     
     func loadCategories(){
         categories = realm.objects(Category.self)
