@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController {
 
@@ -21,6 +22,8 @@ class CategoryViewController: SwipeTableViewController {
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         loadCategories()
+        
+        tableView.separatorStyle = .none
     }
     
     
@@ -34,8 +37,14 @@ class CategoryViewController: SwipeTableViewController {
         
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories"
-   
+        if let category = categories?[indexPath.row] {
+            cell.textLabel?.text = category.name
+            guard let categoryColor = UIColor(hexString: category.hexColor ?? "#50A3F7" ) else {fatalError()}
+            
+            cell.backgroundColor = categoryColor
+            cell.textLabel?.textColor = ContrastColorOf(categoryColor, returnFlat: true)
+        }
+        
         return cell
     }
     
@@ -70,7 +79,7 @@ class CategoryViewController: SwipeTableViewController {
             
             
             let newCategory = Category()
-            
+            newCategory.hexColor = UIColor.randomFlat.hexValue()
             newCategory.name = textField.text!
             
             self.save(category: newCategory)
@@ -112,7 +121,7 @@ class CategoryViewController: SwipeTableViewController {
             } catch {
                 print("Error deleting category: \(error)")
             }
-            //                tableView.reloadData()
+//            tableView.reloadData()
         }
     }
     
