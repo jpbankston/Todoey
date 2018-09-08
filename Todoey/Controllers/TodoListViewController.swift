@@ -73,13 +73,9 @@ class TodoListViewController : SwipeTableViewController {
                 cell.backgroundColor = color
                 cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
             }
-            
-
         } else {
             cell.textLabel?.text = "No Items"
         }
-        
-        
         return cell
     }
     
@@ -117,7 +113,6 @@ class TodoListViewController : SwipeTableViewController {
                         let newItem = Item()
                         newItem.title = textField.text!
                         newItem.dateCreated = Date()
-//                        newItem.hexColor = UIColor.randomFlat.hexValue()
                         currentCategory.items.append(newItem)
                     }
                 } catch {
@@ -140,18 +135,7 @@ class TodoListViewController : SwipeTableViewController {
     
     //MARK: - Model Manipulation Methods
     
-//    func saveItems() {
-//
-//        do {
-//            try context.save()
-//        } catch {
-//            print("Error saving context: \(error)")
-//        }
-//        self.tableView.reloadData()
-//    }
-
-    func loadItems(){
-        
+    func loadItems() {
         todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         self.tableView.reloadData()
     }
@@ -166,7 +150,6 @@ class TodoListViewController : SwipeTableViewController {
                     print("Error deleting item: \(error)")
             }
         }
-//        self.tableView.reloadData()
     }
     
 }

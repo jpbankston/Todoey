@@ -18,7 +18,6 @@ class CategoryViewController: SwipeTableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         loadCategories()
@@ -26,7 +25,10 @@ class CategoryViewController: SwipeTableViewController {
         tableView.separatorStyle = .none
     }
     
-    
+    override func viewWillAppear(_ animated: Bool) {
+        //MARK: - Add code to count items in Category and place number in label itemCount
+    }
+
     //MARK: - TableView Datasource Methods
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories?.count ?? 1
@@ -62,6 +64,7 @@ class CategoryViewController: SwipeTableViewController {
         
         if let indexPath = tableView.indexPathForSelectedRow {
             destinationVC.selectedCategory = categories?[indexPath.row]
+            tableView.deselectRow(at: indexPath, animated: true)
         }
     }
     
@@ -74,16 +77,12 @@ class CategoryViewController: SwipeTableViewController {
         
         let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
             // what will happen once the user clicks the "Add Category" button on the UIAlert
-            
-            //            print(textField.text)
-            
-            
+
             let newCategory = Category()
             newCategory.hexColor = UIColor.randomFlat.hexValue()
             newCategory.name = textField.text!
             
             self.save(category: newCategory)
-            
         }
         
         alert.addAction(action)
@@ -91,7 +90,6 @@ class CategoryViewController: SwipeTableViewController {
         alert.addTextField { (field) in
             textField = field
             textField.placeholder = "Create new Category"
-            //            print(alertTextField.text!)
         }
         
         present(alert, animated: true, completion: nil)
@@ -116,25 +114,19 @@ class CategoryViewController: SwipeTableViewController {
         {
             do {
                 try self.realm.write {
+                    let todoItems = categoryForDeletion.items
+                    
+                    // delete associated items (if any)
+                    if todoItems.count > 0 {
+                        realm.delete(todoItems)
+                    }
                     self.realm.delete(categoryForDeletion)
-                }
+               }
             } catch {
                 print("Error deleting category: \(error)")
             }
-//            tableView.reloadData()
         }
     }
-    
-//    func delete(category: Category) {
-//        do {
-//            try realm.write {
-//                realm.delete(category)
-//            }
-//        } catch {
-//            print("Error deleting category: \(error)")
-//        }
-//        tableView.reloadData()
-//    }
     
     func loadCategories(){
         categories = realm.objects(Category.self)
